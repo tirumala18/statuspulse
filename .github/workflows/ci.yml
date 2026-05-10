@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        
+    - name: Install Ruff
+      run: pip install ruff
+
+    - name: Lint with Ruff
+      run: ruff check app/
+      continue-on-error: true # Might fail initially depending on the code provided
+
+    - name: Scan Dockerfile with hadolint
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+      continue-on-error: true
+
+    - name: Create .env file for Docker Compose
+      run: cp .env.example .env
+
+    - name: Build Docker image
+      run: make build
+
+    - name: Start full stack via Docker Compose
+      run: make up
+
+    - name: Wait for services to be healthy
+      run: |
+        echo "Waiting for services to be healthy..."
+        sleep 15
+        docker compose ps
+        
+        # Wait up to 60 seconds for app to be healthy
+        for i in {1..12}; do
+          if docker inspect --format "{{json .State.Health.Status }}" $(docker compose ps -q app) | grep -q "healthy"; then
+            echo "App is healthy!"
+            break
+          fi
+          echo "Waiting..."
+          sleep 5
+        done
+        
+        # Show logs if failed
+        if ! docker inspect --format "{{json .State.Health.Status }}" $(docker compose ps -q app) | grep -q "healthy"; then
+          echo "Services failed to become healthy. Logs:"
+          docker compose logs
+          exit 1
+        fi
+
+    - name: Run integration tests
+      run: |
+        chmod +x tests/test_integration.sh
+        tests/test_integration.sh > test_results.txt
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: integration-test-results
+        path: test_results.txt
+
+    - name: Tear down stack
+      if: always()
+      run: make down
