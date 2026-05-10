@@ -40,6 +40,24 @@ resource "aws_security_group" "statuspulse_sg" {
     description = "HTTPS access"
   }
 
+  # App Direct Access
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "App Direct Access"
+  }
+
+  # Uptime Kuma Direct Access
+  ingress {
+    from_port   = 3001
+    to_port     = 3001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Uptime Kuma"
+  }
+
   # Egress all
   egress {
     from_port   = 0

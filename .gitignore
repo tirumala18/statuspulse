@@ -31,7 +31,6 @@ ENV/
 *.swo
 
 statuspulse_db_*.sql.gz
-screenshots/
 
 # Terraform
 .terraform/
