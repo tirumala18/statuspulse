@@ -11,6 +11,11 @@ log "Starting deployment process..."
 # Navigate to application directory
 cd "$(dirname "$0")/.." || exit 1
 
+if [ ! -f .env ]; then
+  log ".env file is missing. Creating from .env.example..."
+  cp .env.example .env
+fi
+
 # Export image tag if not set, default to latest
 export IMAGE_TAG=${IMAGE_TAG:-latest}
 # Assuming ghcr.io image name matches github repository. We'll use an env var or fallback.
