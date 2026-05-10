@@ -6,7 +6,7 @@ import redis
 import psycopg2
 import json
 
-# app = FastAPI(title="StatusPulse", version="1.0.0")
+app = FastAPI(title="StatusPulse", version="1.0.0")
 
 def get_db_connection():
     return psycopg2.connect(
