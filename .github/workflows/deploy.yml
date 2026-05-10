@@ -62,7 +62,9 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           cd ~/statuspulse
+          export IMAGE_NAME=ghcr.io/${{ github.repository }}
           export IMAGE_TAG=sha-${{ github.sha }}
           chmod +x scripts/deploy.sh
           ./scripts/deploy.sh
