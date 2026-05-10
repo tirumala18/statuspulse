@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-BACKUP_DIR="/opt/statuspulse/backups"
+BACKUP_DIR="${HOME}/statuspulse/backups"
 TIMESTAMP=$(date +'%Y-%m-%d_%H%M%S')
 FILENAME="statuspulse_db_${TIMESTAMP}.sql.gz"
 BACKUP_PATH="${BACKUP_DIR}/${FILENAME}"
 
 # Load environment variables
-source /opt/statuspulse/.env
+source ${HOME}/statuspulse/.env
 
 log() {
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
@@ -18,7 +18,7 @@ mkdir -p "$BACKUP_DIR"
 log "Starting PostgreSQL backup..."
 
 # Dump the database from the running docker container
-docker compose -f /opt/statuspulse/docker-compose.yml exec -T db pg_dump -U "$DB_USER" "$DB_NAME" | gzip > "$BACKUP_PATH"
+docker compose -f ${HOME}/statuspulse/docker-compose.yml exec -T db pg_dump -U "$DB_USER" "$DB_NAME" | gzip > "$BACKUP_PATH"
 
 log "Backup completed: $BACKUP_PATH"
 
